@@ -2,8 +2,11 @@ $(function () {
       var isMouseDown = false;
 	  var $startDate;
 	  var $endDate;
+	  var $id;
       $("#scheduler td")
         .mousedown(function () {
+		$id=$(this).attr("id");
+		console.log($id);
           isMouseDown = true;
 		  if($(this).attr("select")=="T"){
 			  $(this).attr("select", "F");
@@ -17,7 +20,7 @@ $(function () {
           return false; // prevent text selection
         })
         .mouseover(function () {
-          if (isMouseDown) {
+          if (isMouseDown && $(this).attr("id")==$id) {
 			if($(this).attr("select")=="T"){
 			  $(this).attr("select", "F");
 			}else{
