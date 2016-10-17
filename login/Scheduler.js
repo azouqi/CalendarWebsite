@@ -3,50 +3,46 @@ $(function () {
 	  var $startDate;
 	  var $endDate;
 	  var $id;
+	  var cc;
       $("#scheduler td")
         .mousedown(function () {
 		$id=$(this).attr("id");
 		console.log($id);
           isMouseDown = true;
-		  if($(this).attr("select")=="T"){
-			  $(this).attr("select", "F");
-			  $startDate=null;
-		  }else{
-			  $(this).attr("select", "T");
-			  $startDate=($(this).html());
-		  }
-		  console.log($(this).attr("select"));
-          $(this).toggleClass("highlighted");
+			$startDate=($(this).html());
+		  //array to save cell objects
+		  cc=new cellsCollection();
+		  cc.addCell(new cellObject(parseInt($(this).html()),parseInt($(this).html())+1, $(this)));
+          $(this).addClass("highlighted");
           return false; // prevent text selection
         })
         .mouseover(function () {
           if (isMouseDown && $(this).attr("id")==$id) {
-			if($(this).attr("select")=="T"){
-			  $(this).attr("select", "F");
-			}else{
-			  $(this).attr("select", "T");
-			  if($startDate==null){
-				  $startDate=($(this).html());
-			  }
-			}
-            $(this).toggleClass("highlighted");
+			$startDate=($(this).html());
+			//cell object with one hour
+			cc.addCell(new cellObject(parseInt($(this).html()),parseInt($(this).html())+1,$(this)));
+            $(this).addClass("highlighted");
           }
         })
 		.mouseup(function(){
-			if($(this).attr("select")=="T"){
-				$endDate=($(this).html());
-				console.log($startDate);
-				console.log($endDate);
-				if((parseInt($startDate))>(parseInt($endDate))){
-					var temp=$startDate;
-					$startDate=$endDate;
-					$endDate=temp;
-				}else if((parseInt($startDate))==(parseInt($endDate))){
-					bootbox.confirm(("You want to select "+$startDate+" o'clock?"), function(result){ console.log('This was logged in the callback: ' + result); });
-				}else{
-					bootbox.confirm(("You want to select from "+$startDate+ " o'clock to "+ $endDate+" o'clock?"), function(result){ console.log('You should write the save to DB stuff ' + result); });
-				}
-			}
+				bootbox.confirm(("You want to select from "+cc.cellArray[0].startDate.hour+":<select id='startDateMin'><option>00</option><option>15</option><option>30</option><option>45</option></select> to "+ 
+				cc.cellArray[cc.cellArray.length-1].startDate.hour+":<select id='endDateMin'><option>00</option><option>15</option><option>30</option><option>45</option></select>"), function(result){ 
+					if(!result){
+						$(cc.cellArray).each(function(){
+						(this.renderObject.removeClass("highlighted"));
+						});
+						cc=null;
+					}else{
+						cc.cellArray[0].startDate.minute=parseInt($('#startDateMin option:selected').text());
+						var temp=$('#endDateMin option:selected').text();
+						if(temp!="00"){
+							cc.cellArray[cc.cellArray.length-1].endDate.hour=parseInt(cc.cellArray[cc.cellArray.length-1].endDate.hour)-1;
+							cc.cellArray[cc.cellArray.length-1].endDate.minute=parseInt(temp);
+						}
+						console.log(cc);
+						cc.render();
+					}
+				});
 		})
         .bind("selectstart", function () {
           return false; // prevent text selection in IE
